@@ -22,7 +22,7 @@ contract DeployMinimalAccount is Script {
         address entryPoint = config.entryPoint;
         vm.startBroadcast(config.account);
         minimalAccount = new MinimalAccount(entryPoint);
-        minimalAccount.transferOwnership(msg.sender);
+        minimalAccount.transferOwnership(config.account);
         vm.stopBroadcast();
         return (helperConfig, minimalAccount);
     }

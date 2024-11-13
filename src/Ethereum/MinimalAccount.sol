@@ -10,10 +10,10 @@ import {SIG_VALIDATION_SUCCESS, SIG_VALIDATION_FAILED} from "lib/account-abstrac
 import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract MinimalAccount is IAccount, Ownable {
-    error MinimalAccount_Failed_to_pay_prefund();
-    error MinimalAccount_Not_From_EntryPoint();
-    error MinimalAccount_Not_From_EntryPoint_or_Owner();
-    error MinimalAccount_Failed_to_execute_call(bytes);
+    error MinimalAccount__Failed_to_pay_prefund();
+    error MinimalAccount__Not_From_EntryPoint();
+    error MinimalAccount__Not_From_EntryPoint_or_Owner();
+    error MinimalAccount__Failed_to_execute_call(bytes);
 
     IEntryPoint private immutable i_entryPoint;
 
@@ -23,14 +23,14 @@ contract MinimalAccount is IAccount, Ownable {
 
     modifier requiredFromEnteryPoint() {
         if (msg.sender != address(i_entryPoint)) {
-            revert MinimalAccount_Not_From_EntryPoint();
+            revert MinimalAccount__Not_From_EntryPoint();
         }
         _;
     }
 
     modifier requiredFromEnteryPointOrOwner() {
         if (msg.sender != address(i_entryPoint) && msg.sender != owner()) {
-            revert MinimalAccount_Not_From_EntryPoint_or_Owner();
+            revert MinimalAccount__Not_From_EntryPoint_or_Owner();
         }
         _;
     }
@@ -47,7 +47,7 @@ contract MinimalAccount is IAccount, Ownable {
             data
         );
         if (!success) {
-            revert MinimalAccount_Failed_to_execute_call(result);
+            revert MinimalAccount__Failed_to_execute_call(result);
         }
     }
 
@@ -86,7 +86,7 @@ contract MinimalAccount is IAccount, Ownable {
                 gas: type(uint256).max
             }("");
             if (!ok) {
-                revert MinimalAccount_Failed_to_pay_prefund();
+                revert MinimalAccount__Failed_to_pay_prefund();
             }
         }
     }
