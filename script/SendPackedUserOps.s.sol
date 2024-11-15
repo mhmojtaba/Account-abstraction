@@ -14,13 +14,14 @@ contract SendPackedUserOps is Script {
 
     function generatePackedUserOps(
         bytes memory _callData,
-        HelperConfig.NetworkConfig memory config
+        HelperConfig.NetworkConfig memory config,
+        address minimalAccount
     ) public view returns (PackedUserOperation memory) {
         // generate unsigned data
-        uint256 _nounce = vm.getNonce(config.account);
+        uint256 _nounce = vm.getNonce(minimalAccount) - 1;
         PackedUserOperation memory userOp = _generateUnsignedData(
             _callData,
-            config.account,
+            minimalAccount,
             _nounce
         );
 

@@ -54,6 +54,11 @@ contract MinimalAccountTest is Test {
             "balance after execute: ",
             dai.balanceOf(address(minimalAccount))
         );
+        console.log("minimalAccount.owner: ", address(minimalAccount.owner()));
+        console.log(
+            "entrypoint: ",
+            address(helperConfig.getConfig().entryPoint)
+        );
     }
 
     function testNonOwnerCannotExecute() public {
@@ -100,7 +105,11 @@ contract MinimalAccountTest is Test {
             data
         );
         PackedUserOperation memory packedUserOp = sendPackedUserOps
-            .generatePackedUserOps(executeCallData, helperConfig.getConfig());
+            .generatePackedUserOps(
+                executeCallData,
+                helperConfig.getConfig(),
+                address(minimalAccount)
+            );
 
         bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint)
             .getUserOpHash(packedUserOp);
@@ -141,7 +150,11 @@ contract MinimalAccountTest is Test {
             data
         );
         PackedUserOperation memory packedUserOp = sendPackedUserOps
-            .generatePackedUserOps(executeCallData, helperConfig.getConfig());
+            .generatePackedUserOps(
+                executeCallData,
+                helperConfig.getConfig(),
+                address(minimalAccount)
+            );
 
         bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint)
             .getUserOpHash(packedUserOp);
@@ -153,8 +166,51 @@ contract MinimalAccountTest is Test {
             userOpHash,
             missingAccountFunds
         );
+        console.log("balance: ", dai.balanceOf(address(minimalAccount)));
         // assert
         assertEq(validationData, 0);
     }
-    // function testEntryPointCanExecute() public {}
+
+    function testEntryPointCanExecute() public {
+        // arrange
+        assertEq(dai.balanceOf(address(minimalAccount)), 0);
+        console.log(
+            "initial balance: ",
+            dai.balanceOf(address(minimalAccount))
+        );
+        address destination = address(dai);
+        uint256 value = 0;
+        bytes memory data = abi.encodeWithSignature(
+            "mint(address,uint256)",
+            address(minimalAccount),
+            AMOUNT
+        );
+
+        bytes memory executeCallData = abi.encodeWithSelector(
+            MinimalAccount.execute.selector,
+            destination,
+            value,
+            data
+        );
+        PackedUserOperation memory packedUserOp = sendPackedUserOps
+            .generatePackedUserOps(
+                executeCallData,
+                helperConfig.getConfig(),
+                address(minimalAccount)
+            );
+        vm.deal(address(minimalAccount), 1e18);
+
+        PackedUserOperation[] memory ops = new PackedUserOperation[](1);
+        ops[0] = packedUserOp;
+
+        // act
+        vm.prank(user);
+        IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(
+            ops,
+            payable(user)
+        );
+
+        // assert
+        assertEq(dai.balanceOf(address(minimalAccount)), AMOUNT);
+    }
 }

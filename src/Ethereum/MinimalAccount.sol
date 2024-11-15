@@ -85,9 +85,7 @@ contract MinimalAccount is IAccount, Ownable {
                 value: missingAccountFunds,
                 gas: type(uint256).max
             }("");
-            if (!ok) {
-                revert MinimalAccount__Failed_to_pay_prefund();
-            }
+            (ok);
         }
     }
 
