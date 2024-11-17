@@ -42,12 +42,6 @@ contract ZkMinimalAccount is IAccount, Ownable {
     error ZkMinimalAccount__FailedToPay();
     error ZkMinimalAccount__InvalidSignature();
 
-    event TransactionExecuted(
-        address indexed to,
-        uint256 indexed value,
-        bytes data
-    );
-
     //******modifires****** */
     modifier requireFromBootLoader() {
         if (msg.sender != BOOTLOADER_FORMAL_ADDRESS) {
@@ -139,8 +133,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
         }
         // check the signature
         bytes32 txHash = _transaction.encodeHash();
-        bytes32 messageHash = MessageHashUtils.toEthSignedMessageHash(txHash);
-        address signer = ECDSA.recover(messageHash, _transaction.signature);
+        address signer = ECDSA.recover(txHash, _transaction.signature);
         bool isValid = signer == owner();
         // return the magic number
         if (isValid) {
@@ -186,8 +179,6 @@ contract ZkMinimalAccount is IAccount, Ownable {
             // check the result
             if (!success) {
                 revert ZkMinimalAccount__ExecutionFailed();
-                // emit the event
-                emit TransactionExecuted(to, value, data);
             }
         }
     }
